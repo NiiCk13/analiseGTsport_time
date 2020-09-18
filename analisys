@@ -1,0 +1,13 @@
+import pandas as pd
+pd.set_option('display.max_rows', 5000)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 500000)
+
+
+get_df = pd.read_csv('C:/Users/nicol/Desktop/GtsTimes.csv')
+df_headers = get_df.head()
+dimTrack = pd.read_excel('C:/Users/nicol/Desktop/GtsTracks.xlsx')
+df = get_df.join(dimTrack, lsuffix='link', rsuffix='Leaderboards')
+
+print(df)
+
