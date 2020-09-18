@@ -1,0 +1,56 @@
+import pandas as pd
+import requests
+import time
+from functions import openTables
+
+from bs4 import BeautifulSoup
+pd.set_option('display.max_rows', 50000)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 500000)
+
+
+req = requests.get('https://www.kudosprime.com/gts/rankings.php?sec=daily')
+urlLinks = []
+nameUrlLinks = []
+data = {'location': nameUrlLinks, 'link': urlLinks}
+
+if req.status_code == 200:
+        content = req.content
+        soup = BeautifulSoup(content, 'html5lib')
+        tableTracks = str(soup.table)
+        clearTableTracks = tableTracks.replace('<a','<p>')
+        df = pd.read_html(clearTableTracks)[0]
+
+        #The columns Course and Tyres are a unique columns, the both split  above is to give a better lever of granulaty
+        # Get the type of tyres used in the daily race track, str[1] get the value of second column after the split
+        df['Tyres'] = df['Course'].str.split('|').str[1]
+        #Get a name of the daily race track, str[0] get the value of first column after  the split
+        df['Course'] = df['Course'].str.split('|').str[0]
+
+        df['Leaderboards'] = df['Leaderboards'].str.split('Ends').str[0]
+        df['Leaderboards'] = df['Leaderboards'].str[-25:]
+        df['Leaderboards'] = df['Leaderboards'].str.replace('eid=', '')
+        df['Country'] = df['Leaderboards'].str[-5:]
+        df['Leaderboards'] = df['Leaderboards'].str.replace(',">World', '')
+        df['Leaderboards'] = 'https://www.kudosprime.com/gts/rankings.php?sec=daily&eid=' + df['Leaderboards']
+
+        #Generate an Excel File
+        #df.to_excel(r'C:\Users\nicol\Desktop\GtsTracks.xlsx', index=False)
+        def appendTables(df,maxInt):
+            qtdRows = int(maxInt)
+            appended_data = []
+            for i in range(4,qtdRows):
+                time.sleep(3)
+                data = pd.DataFrame(openTables(df.loc[i]))
+                # store DataFrame in list
+                appended_data.append(data)
+
+            # see pd.concat documentation for more info
+            appended_data = pd.concat(appended_data)
+            # write DataFrame to an excel sheet
+            appended_data.to_csv(r'C:\Users\nicol\Desktop\GtsTimes2.csv', index=False)
+
+
+        linkTableTimes = appendTables(df['Leaderboards'],len(df['Leaderboards'].index))
+
+
