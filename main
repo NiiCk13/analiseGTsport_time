@@ -1,56 +1,92 @@
 import pandas as pd
 import requests
 import time
-from functions import openTables
-
+#from functions import openTables
 from bs4 import BeautifulSoup
 pd.set_option('display.max_rows', 50000)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 500000)
 
+if __name__ == "__main__":
+     path_file = input('Inserir o caminho que será salvo o arquivo:')
+     print(path_file)
+     name_file = input('Nome que deseja salvar o arquivo:')
+     print(name_file)
+     name_file =  str(r"\pandas_doc_" + name_file + ".csv")
+     path_file = str(path_file) + name_file
+     site_link = str(input('Inserir o site de extração | Enter para valor default:') or 'https://www.kudosprime.com/gts/rankings.php?sec=daily')
+     print('Gerando arquivo...')
 
-req = requests.get('https://www.kudosprime.com/gts/rankings.php?sec=daily')
-urlLinks = []
-nameUrlLinks = []
-data = {'location': nameUrlLinks, 'link': urlLinks}
+     if path_file != '':
+            req = requests.get(str(site_link))
+            if req.status_code == 200:
+                   content = req.content
+                   soup = BeautifulSoup(content, 'html5lib')
+                   tableTracks = str(soup.table)
+                   clearTableTracks = tableTracks.replace('<a', '<p>')
+                   df = []
+                   df = pd.read_html(clearTableTracks)[0]
 
-if req.status_code == 200:
-        content = req.content
-        soup = BeautifulSoup(content, 'html5lib')
-        tableTracks = str(soup.table)
-        clearTableTracks = tableTracks.replace('<a','<p>')
-        df = pd.read_html(clearTableTracks)[0]
+                   # The columns Course and Tyres are a unique columns, the both split  above is to give a better lever of granulaty
+                   # Get the type of tyres used in the daily race track, str[1] get the value of second column after the split
+                   df['Tyres'] = df['Course'].str.split('|').str[1]
+                   # Get a name of the daily race track, str[0] get the value of first column after  the split
+                   df['Course'] = df['Course'].str.split('|').str[0]
 
-        #The columns Course and Tyres are a unique columns, the both split  above is to give a better lever of granulaty
-        # Get the type of tyres used in the daily race track, str[1] get the value of second column after the split
-        df['Tyres'] = df['Course'].str.split('|').str[1]
-        #Get a name of the daily race track, str[0] get the value of first column after  the split
-        df['Course'] = df['Course'].str.split('|').str[0]
+                   df['Leaderboards'] = df['Leaderboards'].str.split('Ends').str[0]
+                   df['Leaderboards'] = df['Leaderboards'].str[-25:]
+                   df['Leaderboards'] = df['Leaderboards'].str.replace('eid=', '')
+                   df['Country'] = df['Leaderboards'].str[-5:]
+                   df['Leaderboards'] = df['Leaderboards'].str.replace(',">World', '')
+                   df['Leaderboards'] = 'https://www.kudosprime.com/gts/rankings.php?sec=daily&eid=' + df[
+                          'Leaderboards']
 
-        df['Leaderboards'] = df['Leaderboards'].str.split('Ends').str[0]
-        df['Leaderboards'] = df['Leaderboards'].str[-25:]
-        df['Leaderboards'] = df['Leaderboards'].str.replace('eid=', '')
-        df['Country'] = df['Leaderboards'].str[-5:]
-        df['Leaderboards'] = df['Leaderboards'].str.replace(',">World', '')
-        df['Leaderboards'] = 'https://www.kudosprime.com/gts/rankings.php?sec=daily&eid=' + df['Leaderboards']
+                   # Generate an Excel File
+                   df.to_excel(path_file +'_Dim_Tracks.xlsx', index=False)
 
-        #Generate an Excel File
-        #df.to_excel(r'C:\Users\nicol\Desktop\GtsTracks.xlsx', index=False)
-        def appendTables(df,maxInt):
-            qtdRows = int(maxInt)
-            appended_data = []
-            for i in range(4,qtdRows):
-                time.sleep(3)
-                data = pd.DataFrame(openTables(df.loc[i]))
-                # store DataFrame in list
-                appended_data.append(data)
+                   def openTables(link):
+                          req = requests.get(link)
+                          dfTableTime = []
 
-            # see pd.concat documentation for more info
-            appended_data = pd.concat(appended_data)
-            # write DataFrame to an excel sheet
-            appended_data.to_csv(r'C:\Users\nicol\Desktop\GtsTimes2.csv', index=False)
+                          if req.status_code == 200:
+                                 content = req.content
+                                 soup = BeautifulSoup(content, 'html5lib')
+                                 tableTimes = str(soup.table)
+                                 dfTableTime = pd.read_html(tableTimes)[0]
+                                 dfTableTime[['Link']] = link
+
+                          return dfTableTime
 
 
-        linkTableTimes = appendTables(df['Leaderboards'],len(df['Leaderboards'].index))
+
+                   def appendTables(df, maxInt,path_file):
+                          qtdRows = int(maxInt)
+                          appended_data = []
+                          for i in range(4, 60):
+                                 time.sleep(3)
+                                 data = pd.DataFrame(openTables(df.loc[i]))
+                                 # store DataFrame in list
+                                 appended_data.append(data)
+
+                          # see pd.concat documentation for more info
+                          appended_data = pd.concat(appended_data)
+                          # write DataFrame to an excel sheet
+                          appended_data.to_csv(path_file, index=False)
+
+
+                   linkTableTimes = appendTables(df['Leaderboards'], len(df['Leaderboards'].index),path_file)
+                   print('Arquivo salvo em:'+path_file)
+
+
+
+     else:
+        path_file = input('Caminho não digitado, favor digitar o caminho:')
+
+
+
+
+
+
+
 
 
