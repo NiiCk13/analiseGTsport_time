@@ -9,10 +9,10 @@ pd.set_option('display.width', 500000)
 if __name__ == "__main__":
      path_file = input('Inserir o caminho que será salvo o arquivo:')
      print(path_file)
-     name_file = input('Nome que deseja salvar o arquivo:')
-     print(name_file)
-     name_file =  str(r"\pandas_doc_" + name_file + ".csv")
-     path_file = str(path_file) + name_file
+     name_file_user= input('Nome que deseja salvar o arquivo:')
+     print(name_file_user)
+     nameFile_wExtension =  str(r"\pandas_doc_" + name_file_user + ".csv")
+     path_file = str(path_file) + nameFile_wExtension
      site_link = str(input('Inserir o site de extração | Enter para valor default:') or 'https://www.kudosprime.com/gts/rankings.php?sec=daily')
      print('Gerando arquivo...')
 
@@ -38,10 +38,11 @@ if __name__ == "__main__":
                    df['Country'] = df['Leaderboards'].str[-5:]
                    df['Leaderboards'] = df['Leaderboards'].str.replace(',">World', '')
                    df['Leaderboards'] = 'https://www.kudosprime.com/gts/rankings.php?sec=daily&eid=' + df['Leaderboards']
-                   df.drop([1,2,3])
+                   df = df.drop(df.loc[0:2].index)
 
                    # Generate an Excel File
-                   df.to_excel(path_file +'_Dim_Tracks.xlsx', index=False)
+                   df.to_excel('DimensionTable_GtTracks', index=False)
+                   df.to_excel(name_file_user +'_Dim_Tracks.xlsx', index=False)
 
                    def openTables(link):
                           req = requests.get(link)
@@ -61,7 +62,7 @@ if __name__ == "__main__":
                    def appendTables(df, maxInt,path_file):
                           qtdRows = int(maxInt)
                           appended_data = []
-                          for i in range(1, 60):
+                          for i in range(0, qtdRows):
                                  time.sleep(3)
                                  data = pd.DataFrame(openTables(df.loc[i]))
                                  # store DataFrame in list
@@ -70,6 +71,7 @@ if __name__ == "__main__":
                           # see pd.concat documentation for more info
                           appended_data = pd.concat(appended_data)
                           # write DataFrame to an excel sheet
+                          appended_data.to_csv('FactTable_gtTimes', index=False)
                           appended_data.to_csv(path_file, index=False)
 
 
@@ -80,9 +82,6 @@ if __name__ == "__main__":
 
      else:
         path_file = input('Caminho não digitado, favor digitar o caminho:')
-
-
-
 
 
 
