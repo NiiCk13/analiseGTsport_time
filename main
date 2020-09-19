@@ -41,7 +41,7 @@ if __name__ == "__main__":
                    df = df.drop(df.loc[0:2].index)
 
                    # Generate an Excel File
-                   df.to_excel('DimensionTable_GtTracks', index=False)
+                   df.to_excel('DimensionTable_GtTracks.xlsx', index=False)
                    df.to_excel(name_file_user +'_Dim_Tracks.xlsx', index=False)
 
                    def openTables(link):
@@ -71,7 +71,7 @@ if __name__ == "__main__":
                           # see pd.concat documentation for more info
                           appended_data = pd.concat(appended_data)
                           # write DataFrame to an excel sheet
-                          appended_data.to_csv('FactTable_gtTimes', index=False)
+                          appended_data.to_csv('FactTable_gtTimes.csv', index=False)
                           appended_data.to_csv(path_file, index=False)
 
 
