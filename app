@@ -21,7 +21,7 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 
 #Get all the tables that are used
-dimensionContinent = pd.read_excel(r'C:\Users\nicolas.lelis\Desktop\Nico\dim_continent.xlsx')
+dimensionContinent = pd.read_excel('dim_continent.xlsx')
 dimensionTracks = pd.read_excel('DimensionTable_GtTracks.xlsx')
 trackImages = pd.read_excel('trackImages.xlsx')
 countryFlags = pd.read_excel('dim_countries.xlsx')
@@ -53,6 +53,7 @@ df1.columns = ['Qty']
 df1 = df1.reset_index()
 dfRegionTable = df[['Time',	'Player', 'Ctry', 'Gap', 'Link', 'Course', 'Tyres', 'name']]
 
+
 #2 dataframe
 df_BestplayersOverall = df[['Gap']]=='00.000'
 df_BestplayersOverall = df.groupby(['Player','LinkFlag']).agg({'Id':['count']})
@@ -68,6 +69,17 @@ df_BestplayersByTrack = df.groupby(['Player','Course','LinkFlag','LinkImg']).agg
 df_BestplayersByTrack.columns = ['Qty']
 df_BestplayersByTrack = df_BestplayersByTrack.reset_index()
 df_BestplayersByTrack = df_BestplayersByTrack.sort_values('Qty',ascending=False)
+
+
+#4
+
+df_qtyContinent = df.groupby(['region']).agg({'Id':['count']})
+df_qtyContinent.columns = ['Qty']
+df_qtyContinent = df_qtyContinent.reset_index()
+df_qtyContinent = df_qtyContinent[0:4]
+d = go.Figure(data=[go.Pie(labels=df_qtyContinent['region'], values=df_qtyContinent['Qty'],hole=.6,marker_colors=['rgb(56, 75, 126)', 'rgb(18, 36, 37)', 'rgb(34, 53, 101)',
+                'rgb(36, 55, 57)', 'rgb(6, 4, 4)'], pull=[0 ,0 ,0 ,0.05])])
+
 
 
 
@@ -88,19 +100,20 @@ colors = {
 }
 
 
-
-
-
 app = dash.Dash(__name__)
 #intance the elements on the canvas and scribe the title of the page
 app.layout = html.Div(style={'backgroundColor': colors['background'],
                              'margin':'0',
-                             'padding':'0'},
+                             'padding':'0',
+                             'font-family': 'Helvetica Neue, HelveticaNeue-Medium, HelveticaNeue-Light,Roboto, sans-serif',
+                             'font-size':'14px',
+                             'line-height': '1',
+                             '-webkit-font-smoothing': 'antialiased'},
 
                       children=[html.Div([
                                           html.Img(src='https://www.gran-turismo.com/common/front/img/global/logo-gt.svg',
                                                    style={'position' :'absolute',
-                                                          'margin-top': '2%',
+                                                          'margin-top': '1%',
                                                           'margin-left': '2%'
                                                           }),
 
@@ -108,8 +121,6 @@ app.layout = html.Div(style={'backgroundColor': colors['background'],
                                                   style={'margin-left':'10%',
                                                          'margin-top':'1.5%',
                                                          'font-style': 'italic',
-                                                         'font-family': "'Helvetica Neue', 'HelveticaNeue-Medium', 'HelveticaNeue-Light', 'Roboto', sans-serif'",
-                                                                                                                                                 ''
                                                          'display': 'inline-block',
                                                          'color': '#FFFFFF'})
 
@@ -123,8 +134,131 @@ app.layout = html.Div(style={'backgroundColor': colors['background'],
                         html.Div(style={'color': colors['text']},
                                  children ="Dash to show the quantity of participants in the Daily races by the country and tracks"
                         ),
+                        #plot the indicator cards bellow of the header
+                            html.Div([
+                                    html.Div([html.Div('1st Daily Player',id='1stT'),
+                                              html.H6(df_BestplayersOverall['Player'][0],
+                                                      style={'font-size': '1.2rem',
+                                                             'line-height': '1.6',
+                                                             'letter-spacing': '0',
+                                                             'margin-bottom': '0.75rem',
+                                                             'margin-top': '0.75rem'}),
+                                              html.Img(src= df_BestplayersOverall['LinkFlag'][0],
+                                                       style={'max-width':'35%',
+                                                              'max-height':'35%',
+                                                              'float':'right'})],
+
+                                    id='1stP',style={'border-radius': '5px',
+                                                     'background-color': '#f9f9f9',
+                                                     'margin': '10px',
+                                                     'padding': '15px',
+                                                     'position': 'relative',
+                                                     'flex': '1',
+                                                     'box-shadow': '2px 2px 2px lightgrey'}),
+
+
+
+                                    html.Div([html.Div('2nd Daily Player',id='2ndT'),
+                                              html.H6(df_BestplayersOverall['Player'][1],
+                                                      style={'font-size': '1.2rem',
+                                                             'line-height': '1.6',
+                                                             'letter-spacing': '0',
+                                                             'margin-bottom': '0.75rem',
+                                                             'margin-top': '0.75rem'}),
+                                              html.Img(src= df_BestplayersOverall['LinkFlag'][1],
+                                                       style={'max-width':'35%',
+                                                              'max-height':'35%',
+                                                              'float':'right'})],
+
+                                    id='2ndP',style={'border-radius': '5px',
+                                                     'background-color': '#f9f9f9',
+                                                     'margin': '10px',
+                                                     'padding': '15px',
+                                                     'position': 'relative',
+                                                     'flex': '1',
+                                                     'box-shadow': '2px 2px 2px lightgrey'}),
+
+
+
+                                    html.Div([html.Div('3rd Daily Player',id='3rdT'),
+                                              html.H6(df_BestplayersOverall['Player'][2],
+                                                      style={'font-size': '1.2rem',
+                                                             'line-height': '1.6',
+                                                             'letter-spacing': '0',
+                                                             'margin-bottom': '0.75rem',
+                                                             'margin-top': '0.75rem'}),
+                                              html.Img(src= df_BestplayersOverall['LinkFlag'][2],
+                                                       style={'max-width':'35%',
+                                                              'max-height':'35%',
+                                                              'float':'right'})],
+
+                                    id='3rdP',style={'border-radius': '5px',
+                                                     'background-color': '#f9f9f9',
+                                                     'margin': '10px',
+                                                     'padding': '15px',
+                                                     'position': 'relative',
+                                                     'flex': '1',
+                                                     'box-shadow': '2px 2px 2px lightgrey'}),
+
+
+
+                                    html.Div([html.Div('4th Daily Player',id='4thT'),
+                                              html.H6(df_BestplayersOverall['Player'][3],
+                                                      style={'font-size': '1.2rem',
+                                                             'line-height': '1.6',
+                                                             'letter-spacing': '0',
+                                                             'margin-bottom': '0.75rem',
+                                                             'margin-top': '0.75rem'}),
+                                              html.Img(src= df_BestplayersOverall['LinkFlag'][3],
+                                                       style={'max-width':'35%',
+                                                              'max-height':'35%',
+                                                              'float':'right'})],
+
+                                    id='4thP',style={'border-radius': '5px',
+                                                     'background-color': '#f9f9f9',
+                                                     'margin': '10px',
+                                                     'padding': '15px',
+                                                     'position': 'relative',
+                                                     'flex': '1',
+                                                     'box-shadow': '2px 2px 2px lightgrey'}),
+
+
+
+                                    html.Div([html.Div('5th Daily Player',id='5thT'),
+                                              html.H6(df_BestplayersOverall['Player'][4],
+                                                      style={'font-size': '1.2rem',
+                                                             'line-height': '1.6',
+                                                             'letter-spacing': '0',
+                                                             'margin-bottom': '0.75rem',
+                                                             'margin-top': '0.75rem'}),
+                                              html.Img(src= df_BestplayersOverall['LinkFlag'][4],
+                                                       style={'max-width':'35%',
+                                                              'max-height':'35%',
+                                                              'float':'right'})],
+
+                                    id='5thP',style={'border-radius': '5px',
+                                                     'background-color': '#f9f9f9',
+                                                     'margin': '10px',
+                                                     'padding': '15px',
+                                                     'position': 'relative',
+                                                     'flex': '1',
+                                                     'box-shadow': '2px 2px 2px lightgrey'}),
+
+                                         ],
+                                 style={'display': 'flex'},
+                                 id='info-container'
+                                    ),
+
+
+
+
+
+
+
+
                         #plot the filter field on the screen to Graph bellow
-                        html.Aside(style={"width": "50%"},
+                        html.Aside(style={"width": "47%",
+                                          'margin-left':'1.5%'},
                                     children=[html.Label('Filter you continent'),
                                     dcc.Dropdown(id='QtyPlayer-regionF',
                                                  options=[{'label': i, 'value': i} for i in regionFilter],
@@ -135,24 +269,29 @@ app.layout = html.Div(style={'backgroundColor': colors['background'],
                             ]
 
                         ),
-                        #plot the main Graphic on the Screen
-                        html.Div(style={"width": "50%",
+                        #plot the main Graphic on the Screen ( qtd of player by country)
+                        html.Div(style={'width': '50%',
                                         'backgroundColor': colors['backgroundTable'],
-                                        'margin-top':'2%',
+                                        'margin-top':'1.5%',
                                         'margin-left':'1.5%',
-                                        'width': '47%',
+                                        'height': '50%',
                                         'position':'absolute'},
-                                 children=[dcc.Graph(id="QtyPlayer-Ctry")]
+                                 children=[dcc.Graph(id="QtyPlayer-Ctry",
+                                                     style={'min-width': '85%',
+                                                            'height':'95%',
+                                                            'max-height':'95%',
+                                                            'background-color':'#FFFFFF'})]
 
                         ),
-                        html.Div(style={"margin-left": "50%",
+                        html.Div(style={'width': '50%',
                                         'backgroundColor': colors['backgroundTable'],
-                                        'margin-top':'2%',
-                                        'margin-left':'51%',
-                                        'width': '47%',
-                                        'position':'relative'
+                                        'margin-top': '30%',
+                                        'margin-left':'1.5%'
+
+
+
                                         },
-                                 children=[dcc.Graph(id="bestPlayer-overall")]
+                                 children=[dcc.Graph(id="qtdy-continent",figure=d)]
 
                         ),
                         #plot the table base to Graph bellow on the screen
